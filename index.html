@@ -1163,7 +1163,7 @@ if(!localStorage.getItem('crm_seeded_v2')){
 }
 leads.forEach(l=>{if(!l.dataEntrada)l.dataEntrada=l.entradaDate||l.entrada_data||today();if(l.entrada&&!ENTRADA_FX.includes(l.entrada)&&l.entrada.match(/^\d{4}-/)){l.dataEntrada=l.entrada;l.entrada=''}});
 save();
-setView('mapa');setTimeout(initMaps,200);
+setView('dash');
 initCloud();
 if(localStorage.getItem('crm_sheet_url'))setTimeout(syncSheet,600);
 if(window.Notification&&Notification.permission==='granted')setTimeout(checkNotif,800);
