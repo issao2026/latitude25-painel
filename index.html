@@ -99,8 +99,8 @@
   .filters input,.filters select{padding:9px 13px;border:1px solid var(--line);border-radius:10px;font-size:.85rem;background:#fff;outline:none;font-family:inherit}
   .filters input:focus,.filters select:focus{border-color:var(--petrol)}
   /* KANBAN */
-  .kanban{display:flex;gap:13px;overflow-x:auto;align-items:flex-start;padding-bottom:8px}
-  .col{background:#fff;border-radius:var(--r);min-width:265px;max-width:265px;box-shadow:var(--sh);display:flex;flex-direction:column;max-height:calc(100vh - 250px)}
+  .kanban{display:flex;gap:9px;overflow-x:auto;align-items:flex-start;padding-bottom:8px}
+  .col{background:#fff;border-radius:var(--r);flex:1 1 0;min-width:150px;box-shadow:var(--sh);display:flex;flex-direction:column;max-height:calc(100vh - 250px)}
   .col-head{padding:12px 15px;font-weight:700;font-size:.8rem;border-radius:var(--r) var(--r) 0 0;display:flex;align-items:center;justify-content:space-between;color:#fff;text-transform:uppercase;letter-spacing:.4px}
   .col-head .badge{background:rgba(255,255,255,.28);border-radius:20px;padding:2px 9px;font-size:.74rem}
   .col[data-stage=novo] .col-head{background:#5d4a30}
@@ -167,7 +167,7 @@
   .toast.show{opacity:1}
   @media(max-width:780px){.g2,.g3{grid-template-columns:1fr}.view{padding:16px 12px 30px}.hide-m{display:none}.row{flex-wrap:wrap}.row .acts{width:100%}}
 
-  .logo-off{height:40px;width:auto;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+  .logo-off{height:56px;width:auto;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
   header .brand #today-date{font-size:.72rem;opacity:.78;letter-spacing:.4px}
   #brmap,#brmap.leaflet-container{background:#cfe6f5 !important}
   .imo .thumb{height:142px;background:#e7ded0 center/cover no-repeat;position:relative}
