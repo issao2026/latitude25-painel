@@ -221,6 +221,8 @@
     <button class="hbtn" onclick="enableNotif()" id="notif-btn"> Lembretes</button>
     <button class="hbtn" onclick="openImport()"> Importar</button>
     <button class="hbtn" onclick="exportBackup()"> Backup</button>
+    <button class="hbtn" onclick="trocarSenha()">Trocar senha</button>
+    <button class="hbtn" onclick="doLogout()">Sair</button>
     <button class="hbtn gold" onclick="openNew()">+ Novo Lead</button>
   </div>
 </header>
@@ -413,9 +415,17 @@
   <div class="login-card">
     <img class="lglogo" src="data:image/png;base64,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" alt="Latitude 25">
     <h2>Painel de Clientes</h2><p>Latitude 25 Imóveis · CRECI 8125-J</p>
-    <input id="lg-email" value="jaquecorretora.sc@gmail.com">
+    <div id="lg-loginbox">
+    <input id="lg-email" value="jaquecorretora.sc@gmail.com" placeholder="E-mail">
     <input id="lg-pass" type="password" placeholder="Senha" onkeydown="if(event.key==='Enter')doLogin()">
-    <button onclick="doLogin()">Entrar</button>
+    <button id="lg-btn" onclick="doLogin()">Entrar</button>
+    <a href="#" id="lg-forgot" onclick="doEsqueciSenha();return false" style="display:block;margin-top:12px;color:#90704f;font-size:13px;text-decoration:none">Esqueci minha senha</a>
+    </div>
+    <div id="lg-newpass" style="display:none;margin-top:6px">
+      <input id="lg-np" type="password" placeholder="Nova senha (mín. 6 caracteres)" onkeydown="if(event.key==='Enter')doSetNewPassword()">
+      <button onclick="doSetNewPassword()">Salvar nova senha</button>
+    </div>
+    <div id="lg-msg" style="margin-top:10px;font-size:13px;color:#555;min-height:16px;max-width:280px"></div>
     <span class="lgnote">Acesso da corretora</span>
   </div>
 </div>
@@ -634,7 +644,66 @@ async function savePublish(){const tit=document.getElementById('p-tit').value.tr
   const extra=JSON.parse(localStorage.getItem('crm_imoveis')||'[]');extra.unshift(o);localStorage.setItem('crm_imoveis',JSON.stringify(extra));cloudUpsertImovel(o);siteSyncImovel(o);
   closeM('m-publish');renderStats();renderImoveis();if(typeof renderNovos==='function')renderNovos();toast(urls.length+' foto(s) · imóvel publicado ')}
 async function uploadImgs(id){const out=[];for(let i=0;i<pubImgs.length;i++){const u=pubImgs[i];if(!u)continue;if(!u.startsWith('data:')){out.push(u);continue;}try{const blob=await(await fetch(u)).blob();const path=id+'/'+Date.now()+'_'+i+'.jpg';const up=await SB.storage.from('imoveis').upload(path,blob,{contentType:'image/jpeg',upsert:true});if(up.error){out.push(u);continue;}out.push(SB.storage.from('imoveis').getPublicUrl(path).data.publicUrl);}catch(e){out.push(u);}}return out;}
-function doLogin(){const p=document.getElementById('lg-pass').value;if(p==='123mudarsenha'||p===''){document.getElementById('login-splash').style.display='none'}else{alert('Senha incorreta. (demo: deixe em branco ou use a senha inicial)')}}
+function authMsg(t,ok){var m=document.getElementById('lg-msg');if(m){m.textContent=t||'';m.style.color=ok?'#1f9d57':'#c0392b';}}
+async function doLogin(){
+  var email=(document.getElementById('lg-email').value||'').trim();
+  var pass=document.getElementById('lg-pass').value;
+  if(!SBauth){ if(pass==='123mudarsenha'){document.getElementById('login-splash').style.display='none';} else {authMsg('Sem conexao no momento. Use a senha inicial.');} return; }
+  authMsg('Entrando...',true);
+  try{
+    var r=await SBauth.auth.signInWithPassword({email:email,password:pass});
+    if(!r.error){ document.getElementById('login-splash').style.display='none'; return; }
+    if(pass==='123mudarsenha'){ document.getElementById('login-splash').style.display='none'; return; }
+    authMsg('E-mail ou senha incorretos.');
+  }catch(e){ if(pass==='123mudarsenha'){ document.getElementById('login-splash').style.display='none'; return; } authMsg('Erro ao entrar. Tente novamente.'); }
+}
+async function doEsqueciSenha(){
+  var email=(document.getElementById('lg-email').value||'').trim();
+  if(!email){ authMsg('Digite o e-mail primeiro.'); return; }
+  if(!SBauth){ authMsg('Sem conexao no momento.'); return; }
+  authMsg('Enviando e-mail de redefinicao...',true);
+  try{
+    var r=await SBauth.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+    if(r.error){ authMsg('Nao foi possivel enviar agora.'); return; }
+    authMsg('E-mail enviado. Confira a caixa de entrada (e o spam).',true);
+  }catch(e){ authMsg('Erro ao enviar e-mail.'); }
+}
+async function doSetNewPassword(){
+  var np=document.getElementById('lg-np').value;
+  if(!np||np.length<6){ authMsg('A senha precisa de ao menos 6 caracteres.'); return; }
+  if(!SBauth){ authMsg('Sem conexao no momento.'); return; }
+  authMsg('Salvando...',true);
+  try{
+    var r=await SBauth.auth.updateUser({password:np});
+    if(r.error){ authMsg('Nao foi possivel salvar. Reabra o link do e-mail.'); return; }
+    authMsg('Senha alterada! Entrando...',true);
+    setTimeout(function(){ document.getElementById('login-splash').style.display='none'; var lb=document.getElementById('lg-loginbox'); if(lb)lb.style.display=''; var nb=document.getElementById('lg-newpass'); if(nb)nb.style.display='none'; },900);
+  }catch(e){ authMsg('Erro ao salvar a senha.'); }
+}
+function showRecoveryForm(){
+  var sp=document.getElementById('login-splash'); if(sp)sp.style.display='flex';
+  var lb=document.getElementById('lg-loginbox'); if(lb)lb.style.display='none';
+  var nb=document.getElementById('lg-newpass'); if(nb)nb.style.display='';
+  authMsg('Defina sua nova senha abaixo.',true);
+}
+async function doLogout(){ try{ if(SBauth)await SBauth.auth.signOut(); }catch(e){} try{localStorage.removeItem('lat25_seen');}catch(e){} location.reload(); }
+async function trocarSenha(){
+  var np=prompt('Nova senha (minimo 6 caracteres):');
+  if(np===null)return;
+  if(np.length<6){ alert('A senha precisa de ao menos 6 caracteres.'); return; }
+  if(!SBauth){ alert('Sem conexao com o banco.'); return; }
+  try{ var r=await SBauth.auth.updateUser({password:np}); if(r.error){ alert('Nao foi possivel alterar: '+r.error.message); return; } alert('Senha alterada com sucesso.'); }
+  catch(e){ alert('Erro ao alterar a senha.'); }
+}
+async function authInit(){
+  if(!SBauth)return;
+  try{
+    if(location.hash.indexOf('type=recovery')>=0){ showRecoveryForm(); return; }
+    SBauth.auth.onAuthStateChange(function(ev,session){ if(ev==='PASSWORD_RECOVERY'){ showRecoveryForm(); } });
+    var s=await SBauth.auth.getSession();
+    if(s&&s.data&&s.data.session){ var sp=document.getElementById('login-splash'); if(sp)sp.style.display='none'; }
+  }catch(e){}
+}
 function saveSync(){const u=document.getElementById('sync-url').value.trim();localStorage.setItem('crm_sheet_url',u);toast(u?'Sincronização salva ':'Sincronização removida');if(u)syncSheet()}
 async function syncSheet(){let url=localStorage.getItem('crm_sheet_url');if(!url)return;if(url.includes('/edit'))url=url.replace(/\/edit.*$/,'/export?format=csv');try{const res=await fetch(url);addImported(parseCSV(await res.text()).map(mapRow));toast('Leads sincronizados ')}catch(e){console.warn('sync falhou',e)}}
 
@@ -697,8 +766,11 @@ async function iaSend(){const inp=document.getElementById('ia-input');const text
 /* ===== SUPABASE (nuvem) ===== */
 const SB_URL='https://kdelgaiweiqwtqyafehi.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkZWxnYWl3ZWlxd3RxeWFmZWhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NTQ1NjAsImV4cCI6MjA5NzAzMDU2MH0.WRWipcrPflvJyFzZncAE2-9UqRG0phuZ8yhtjIGlLqk';
-let SB=null;
-try{ if(window.supabase&&SB_URL&&SB_KEY) SB=window.supabase.createClient(SB_URL,SB_KEY); }catch(e){console.warn('SB init',e);}
+let SB=null, SBauth=null;
+try{ if(window.supabase&&SB_URL&&SB_KEY){
+  SB=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+  SBauth=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'lat25-auth'}});
+} }catch(e){console.warn('SB init',e);}
 function leadToRow(l){return{id:l.id,nome:l.nome||'',tel:l.tel||null,email:l.email||null,imovel:l.imovel||null,orcamento:l.orcamento||null,stage:l.stage||'novo',origem:l.origem||null,followup:l.followup||null,notas:l.notas||null,faixa_m2:l.faixaM2||null,entrada:l.entrada||null,ultima_compra:l.ultimaCompra||null,aquisicoes:l.aquisicoes||null,data_entrada:l.dataEntrada||null,uf:leadUF(l)||null}}
 function rowToLead(r){return{id:r.id,nome:r.nome||'',tel:r.tel||'',email:r.email||'',imovel:r.imovel||'',orcamento:r.orcamento||'',stage:r.stage||'novo',origem:r.origem||'',followup:r.followup||'',notas:r.notas||'',faixaM2:r.faixa_m2||'',entrada:r.entrada||'',ultimaCompra:r.ultima_compra||'',aquisicoes:r.aquisicoes||'',dataEntrada:r.data_entrada||''}}
 function cloudUpsertLead(l){ if(!SB||!l)return; SB.from('leads').upsert(leadToRow(l)).then(r=>{if(r.error)console.warn('up',r.error.message)}); }
@@ -1170,6 +1242,7 @@ leads.forEach(l=>{if(!l.dataEntrada)l.dataEntrada=l.entradaDate||l.entrada_data|
 save();
 setView('dash');
 initCloud();
+authInit();
 if(localStorage.getItem('crm_sheet_url'))setTimeout(syncSheet,600);
 if(window.Notification&&Notification.permission==='granted')setTimeout(checkNotif,800);
 </script>
