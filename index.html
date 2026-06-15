@@ -660,9 +660,8 @@ async function doLogin(){
   try{
     var r=await SBauth.auth.signInWithPassword({email:email,password:pass});
     if(!r.error){ document.getElementById('login-splash').style.display='none'; return; }
-    if(pass==='123mudarsenha'){ document.getElementById('login-splash').style.display='none'; return; }
     authMsg('E-mail ou senha incorretos.');
-  }catch(e){ if(pass==='123mudarsenha'){ document.getElementById('login-splash').style.display='none'; return; } authMsg('Erro ao entrar. Tente novamente.'); }
+  }catch(e){ authMsg('Erro ao entrar. Tente novamente.'); }
 }
 async function doEsqueciSenha(){
   var email=(document.getElementById('lg-email').value||'').trim();
