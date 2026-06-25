@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><!-- build: topfix -->
+<head><!-- build: nota-ux -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Latitude 25 — Painel de Clientes</title>
@@ -387,8 +387,8 @@
   <div class="frow"><div class="dfield"><strong>Estado (DDD)</strong><span id="d-uf"></span></div><div class="dfield"><strong>Entrada</strong><span id="d-entrada"></span></div></div>
   <div class="fg"><label>Próximo follow-up</label><input type="date" id="d-followup" onchange="updateFollowup()"></div>
   <div class="dfield"><strong>Histórico</strong><div class="dnotes" id="d-notas"></div></div>
-  <div class="fg" style="margin-top:10px"><label>Adicionar nota</label><textarea id="d-nova" placeholder="Nova observação..."></textarea></div>
-  <div class="macts"><button class="bcancel" onclick="closeM('m-detail')">Fechar</button><button class="bdel" onclick="deleteLead()">Excluir</button><button class="bsave" style="background:var(--petrol)" onclick="addNota()">+ Nota</button><button class="bsave" onclick="openEdit()">Editar</button></div>
+  <div class="fg" style="margin-top:10px"><label>Adicionar nota</label><textarea id="d-nova" placeholder="Escreva a observacao..." onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter')addNota()"></textarea><div class="hint" style="margin-top:4px">Escreva e clique em <b>Salvar nota</b> (ou Ctrl+Enter). So fechar nao salva.</div></div>
+  <div class="macts"><button class="bcancel" onclick="closeDetail()">Fechar</button><button class="bdel" onclick="deleteLead()">Excluir</button><button class="bsave" style="background:var(--petrol)" onclick="addNota()">Salvar nota</button><button class="bsave" onclick="openEdit()">Editar</button></div>
 </div></div>
 
 <!-- MODAL IMPORTAR -->
@@ -728,6 +728,7 @@ function saveLead(){const nome=document.getElementById('f-nome').value.trim();if
 function openDetail(id){currentId=id;const l=leads.find(x=>x.id===id);if(!l)return;document.getElementById('d-name').textContent=l.nome;document.getElementById('d-stage').innerHTML=Object.entries(STAGES).map(([k,v])=>`<option value="${k}" ${l.stage===k?'selected':''}>${v.emoji} ${v.label}</option>`).join('');document.getElementById('d-tel').textContent=l.tel||'—';document.getElementById('d-email').textContent=l.email||'—';document.getElementById('d-imovel').textContent=l.imovel||'—';document.getElementById('d-orcamento').textContent=l.orcamento||'—';document.getElementById('d-origem').textContent=l.origem||'—';if(document.getElementById('d-faixa'))document.getElementById('d-faixa').textContent=l.faixaM2==='menor'?'Menor que 100m²':l.faixaM2==='maior'?'Maior que 100m²':'—';if(document.getElementById('d-entradafx'))document.getElementById('d-entradafx').textContent=l.entrada||'—';if(document.getElementById('d-ultima'))document.getElementById('d-ultima').textContent=l.ultimaCompra||'—';if(document.getElementById('d-aquis'))document.getElementById('d-aquis').textContent=l.aquisicoes||'—';document.getElementById('d-uf').textContent=leadUF(l)?(leadUF(l)+' · '+(UF_NAME[leadUF(l)]||'')):'—';document.getElementById('d-entrada').textContent=fmt(l.dataEntrada||l.entradaDate);document.getElementById('d-followup').value=l.followup||'';document.getElementById('d-notas').textContent=l.notas||'—';document.getElementById('d-nova').value='';document.getElementById('m-detail').classList.add('open')}
 function moveStage(){const l=leads.find(x=>x.id===currentId);const ns=document.getElementById('d-stage').value;if(l.stage!==ns){logMove(l,ns);l.stage=ns;cloudUpsertLead(l);save();render();document.getElementById('d-notas').textContent=l.notas}}
 function updateFollowup(){const l=leads.find(x=>x.id===currentId);l.followup=document.getElementById('d-followup').value;cloudUpsertLead(l);save();render()}
+function closeDetail(){var e=document.getElementById('d-nova');if(e&&e.value.trim()){if(confirm('Voce escreveu uma nota mas nao salvou. Salvar agora?')){addNota();}else{e.value='';}}closeM('m-detail');}
 function addNota(){const t=document.getElementById('d-nova').value.trim();if(!t)return;const l=leads.find(x=>x.id===currentId);l.notas=(l.notas?l.notas+'\n':'')+`[${new Date().toLocaleString('pt-BR')}] ${t}`;document.getElementById('d-notas').textContent=l.notas;document.getElementById('d-nova').value='';cloudUpsertLead(l);save();render();toast('Nota adicionada ')}
 function logMove(l,ns){l.notas=(l.notas?l.notas+'\n':'')+`[${new Date().toLocaleString('pt-BR')}] Movido: ${STAGES[l.stage].label} → ${STAGES[ns].label}`}
 function logContact(id){const l=leads.find(x=>x.id===id);if(!l)return;l.notas=(l.notas?l.notas+'\n':'')+`[${new Date().toLocaleString('pt-BR')}] WhatsApp aberto`;if(l.stage==='novo'){l.stage='contato';if(!l.followup||l.followup<today())l.followup=addDays(2)}cloudUpsertLead(l);save();setTimeout(render,400)}
