@@ -238,6 +238,7 @@
   <button class="tab" data-view="mapa" onclick="setView('mapa')"> Mapa</button>
   <button class="tab" data-view="imoveis" onclick="setView('imoveis')"> Imóveis</button>
   <button class="tab" data-view="novos" onclick="setView('novos')"> Novos imóveis</button>
+  <button class="tab" data-view="fin" onclick="setView('fin')"> Financeiro</button>
   <button class="tab" data-view="ia" onclick="setView('ia')">Assistente IA</button>
 </div>
 </div><!-- /topfix -->
@@ -328,6 +329,34 @@
   <div class="imos" id="imos-novos"></div>
 </div>
 
+<!-- FINANCEIRO -->
+<div class="view" id="view-fin">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+    <div><h2 style="margin:0;color:var(--navy);font-size:1.12rem;font-weight:700">Financeiro — Receitas &amp; Comissões</h2>
+    <div class="hint" id="fin-fonte" style="margin:2px 0 0">Carregando...</div></div>
+    <div class="hact" style="gap:7px">
+      <button class="hbtn gold" onclick="finOpenRec()">+ Lançar venda</button>
+      <button class="hbtn" onclick="finOpenDesp()">+ Lançar despesa</button>
+      <button class="hbtn" onclick="document.getElementById('fin-file').click()">Importar planilha</button>
+      <input type="file" id="fin-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="finUpload(event)">
+    </div>
+  </div>
+  <div class="kpis" id="fin-kpis"></div>
+  <div class="grid g2">
+    <div class="card"><h3>VGV negociado por ano</h3><div class="hint">Valor Geral de Vendas intermediado</div><div class="chart-wrap"><canvas id="fch-vgv"></canvas></div></div>
+    <div class="card"><h3>Comissões: geradas x recebidas</h3><div class="hint">Por ano (R$)</div><div class="chart-wrap"><canvas id="fch-com"></canvas></div></div>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card"><h3>VGV por construtora</h3><div class="hint">Onde você mais vendeu</div><div class="chart-wrap"><canvas id="fch-constr"></canvas></div></div>
+    <div class="card"><h3>Despesas por categoria</h3><div class="hint">Registradas nos lançamentos</div><div class="chart-wrap"><canvas id="fch-desp"></canvas></div></div>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card"><h3>Vendas lançadas <span class="hint" id="fin-rec-count" style="font-weight:400"></span></h3><div id="fin-rec-tab" style="max-height:340px;overflow:auto;margin-top:8px"></div></div>
+    <div class="card"><h3>Despesas lançadas</h3><div id="fin-desp-tab" style="max-height:340px;overflow:auto;margin-top:8px"></div></div>
+  </div>
+  <div class="card" style="margin-top:16px;background:#fbf7f0;border-left:4px solid var(--gold)"><h3>Observações do financeiro</h3><div id="fin-obs" style="font-size:.88rem;color:#5a4f40;line-height:1.55;margin-top:8px"></div></div>
+</div>
+
 <!-- IA -->
 <div class="view" id="view-ia">
   <div class="card" style="margin-bottom:14px">
@@ -403,6 +432,31 @@
 </div></div>
 
 <!-- MODAL CLIENTES DO ESTADO -->
+<div class="ov" id="m-finrec"><div class="modal">
+  <h2 id="finrec-title">Lançar venda</h2>
+  <input type="hidden" id="fr-id">
+  <div class="frow"><div class="fg"><label>Ano</label><input id="fr-ano" placeholder="2026"></div><div class="fg"><label>Mês</label><input id="fr-mes" placeholder="Março"></div></div>
+  <div class="fg"><label>Cliente</label><input id="fr-cliente"></div>
+  <div class="frow"><div class="fg"><label>Construtora</label><input id="fr-construtora"></div><div class="fg"><label>Imóvel</label><input id="fr-imovel"></div></div>
+  <div class="frow"><div class="fg"><label>VGV (R$)</label><input id="fr-vgv" type="number" step="any"></div><div class="fg"><label>Comissão (R$)</label><input id="fr-comissao" type="number" step="any"></div></div>
+  <div class="frow"><div class="fg"><label>Recebido (R$)</label><input id="fr-recebido" type="number" step="any"></div><div class="fg"><label>A receber (R$)</label><input id="fr-areceber" type="number" step="any"></div></div>
+  <div class="macts"><button class="bcancel" onclick="closeM('m-finrec')">Cancelar</button><button class="bdel" id="fr-del" onclick="finDelRec()" style="display:none">Excluir</button><button class="bsave" onclick="finSaveRec()">Salvar</button></div>
+</div></div>
+<div class="ov" id="m-findesp"><div class="modal">
+  <h2 id="findesp-title">Lançar despesa</h2>
+  <input type="hidden" id="fd-id">
+  <div class="frow"><div class="fg"><label>Categoria</label><input id="fd-categoria" placeholder="Marketing Digital"></div><div class="fg"><label>Valor (R$)</label><input id="fd-valor" type="number" step="any"></div></div>
+  <div class="fg"><label>Descrição</label><input id="fd-descricao"></div>
+  <div class="frow"><div class="fg"><label>Observação</label><input id="fd-obs" placeholder="Mensal, 12x, pontual..."></div><div class="fg"><label>Recorrente mensal?</label><select id="fd-recorrente"><option value="">Não</option><option value="1">Sim</option></select></div></div>
+  <div class="macts"><button class="bcancel" onclick="closeM('m-findesp')">Cancelar</button><button class="bdel" id="fd-del" onclick="finDelDesp()" style="display:none">Excluir</button><button class="bsave" onclick="finSaveDesp()">Salvar</button></div>
+</div></div>
+
+<div class="ov" id="m-fincomp"><div class="modal">
+  <h2 id="fc-title"></h2>
+  <div class="hint" id="fc-formula" style="margin-bottom:10px"></div>
+  <div id="fc-parts" style="max-height:52vh;overflow:auto"></div>
+  <div class="macts"><button class="bcancel" onclick="closeM('m-fincomp')">Fechar</button><button class="bsave" id="fc-add" data-tipo="rec" onclick="finCompAdd()">+ Adicionar lançamento</button></div>
+</div></div>
 <div class="ov" id="m-state"><div class="modal"><h2 id="sc-title"></h2><div class="rows" id="sc-body" style="max-height:60vh"></div><div class="macts"><button class="bcancel" onclick="closeM('m-state')">Fechar</button></div></div></div>
 
 <!-- MODAL PUBLICAR IMOVEL -->
@@ -492,9 +546,118 @@ function esc(s){return (s||'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':
 document.getElementById('today-date').textContent='CRECI 8125-J · '+new Date().toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'});
 
 function setView(v){currentView=v;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));document.getElementById('view-'+v).classList.add('active');render();if(v==='mapa')setTimeout(initMaps,150)}
-function render(){renderStats();if(currentView==='dash')renderDash();if(currentView==='hoje')renderHoje();if(currentView==='funil')renderKanban();if(currentView==='lista')renderList();if(currentView==='clientes')renderClientes();if(currentView==='imoveis')renderImoveis();if(currentView==='novos')renderNovos();if(currentView==='ia')renderIA()}
+function render(){renderStats();if(currentView==='dash')renderDash();if(currentView==='hoje')renderHoje();if(currentView==='funil')renderKanban();if(currentView==='lista')renderList();if(currentView==='clientes')renderClientes();if(currentView==='imoveis')renderImoveis();if(currentView==='novos')renderNovos();if(currentView==='ia')renderIA();if(currentView==='fin')renderFin()}
 
 function counts(){const c={};SK.forEach(s=>c[s]=0);let over=0,tod=0;leads.forEach(l=>{c[l.stage]++;const fs=fuStatus(l.followup);if(fs==='overdue'&&l.stage!=='ganho'&&l.stage!=='perdido')over++;if(fs==='today'&&l.stage!=='ganho'&&l.stage!=='perdido')tod++});return{c,over,tod}}
+
+var FIN_SEED_REC=[{"id": "r1", "ano": null, "mes": "MÊS", "cliente": "CLIENTE", "construtora": "CONSTRUTORA", "imovel": "IMÓVEL", "vgv": 0, "comissao": 0, "recebido": 0, "areceber": 0}, {"id": "r2", "ano": "2024", "mes": "Janeiro", "cliente": "Felipe Gustavo Dias e Elaine", "construtora": "Stein", "imovel": "BOSSA apto 2501 Torre B", "vgv": 4205000, "comissao": 210250, "recebido": 210250, "areceber": 0}, {"id": "r3", "ano": "2024", "mes": "Janeiro", "cliente": "Felipe Gustavo Dias", "construtora": "Stein", "imovel": "BOSSA apto 703 Torre A", "vgv": 1055528, "comissao": 52776.4, "recebido": 52776.4, "areceber": 0}, {"id": "r4", "ano": "2024", "mes": "Fevereiro", "cliente": "Dirlene Klabunde", "construtora": "Santer", "imovel": "Viverde apto 202 Torre E", "vgv": 472054.9, "comissao": 23602.75, "recebido": 23602.74, "areceber": 0}, {"id": "r5", "ano": "2024", "mes": "Fevereiro", "cliente": "Vagner Crespilho", "construtora": "Santer", "imovel": "Viverde apto 808 Torre B", "vgv": 473352, "comissao": 23667.6, "recebido": 23667.6, "areceber": 0}, {"id": "r6", "ano": "2024", "mes": "Fevereiro", "cliente": "Gena", "construtora": "Santer", "imovel": "Viverde apto 202 Torre D", "vgv": 472054.9, "comissao": 23602.75, "recebido": 23602.75, "areceber": 0}, {"id": "r7", "ano": "2024", "mes": "Março", "cliente": "Rui Zanandrea", "construtora": "Julian Olsen-Pantai", "imovel": "Sala Comercial n. 11 Pantai", "vgv": 465000, "comissao": 20250, "recebido": 20250, "areceber": 0}, {"id": "r8", "ano": "2024", "mes": "Abril", "cliente": "Odair Konell - Andreia", "construtora": "Mabrem", "imovel": "Grant Vista apto 1704", "vgv": 1211380.8, "comissao": 60569.04, "recebido": 60569.04, "areceber": 0}, {"id": "r9", "ano": "2024", "mes": "Abril", "cliente": "Douglas Vavassori", "construtora": "Santer", "imovel": "Breeze apto 1703 C", "vgv": 516187.77, "comissao": 25809.39, "recebido": 25809.39, "areceber": 0}, {"id": "r10", "ano": "2024", "mes": "Abril", "cliente": "Felipe Gustavo Dias", "construtora": "Santer", "imovel": "Viverde apto 802 Torre B", "vgv": 506434.52, "comissao": 25321.73, "recebido": 25321.73, "areceber": 0}, {"id": "r11", "ano": "2024", "mes": "Maio", "cliente": "Elen Magali Aiolfi", "construtora": "Santer", "imovel": "FEEL - apto 506 Torre A", "vgv": 507017.93, "comissao": 25350.9, "recebido": 25350.9, "areceber": 0}, {"id": "r12", "ano": "2024", "mes": "Maio", "cliente": "Cleonice Alves Crespilho", "construtora": "Santer", "imovel": "FEEL - Apto 1905 Torre C", "vgv": 544691, "comissao": 27234.55, "recebido": 27234.55, "areceber": 0}, {"id": "r13", "ano": "2024", "mes": "Outubro", "cliente": "Thiago Decarli", "construtora": "Santer", "imovel": "FEEL - Breeze 2", "vgv": 669666, "comissao": 33483.3, "recebido": 33483.3, "areceber": 0}, {"id": "r14", "ano": "2025", "mes": "Janeiro", "cliente": "Felipe Gustavo Dias", "construtora": "Nobreto", "imovel": "Apartamento 303 SAFIRA", "vgv": 950000, "comissao": 46424.51, "recebido": 46424.51, "areceber": 0}, {"id": "r15", "ano": "2025", "mes": "Janeiro", "cliente": "Laila Farias", "construtora": "LBJ Construtora - Jaime", "imovel": "Gran Canaria - apto 101", "vgv": 786623.55, "comissao": 39331.17, "recebido": 7866.23, "areceber": 0}, {"id": "r16", "ano": "2025", "mes": "Fevereiro", "cliente": "Natália Fonseca Dias", "construtora": "LBJ Construtora - Jaime", "imovel": "Gran Canaria - apto 1004", "vgv": 799130.5, "comissao": 39956.53, "recebido": 7991.3, "areceber": 0}, {"id": "r17", "ano": "2025", "mes": "Março", "cliente": "Anderson e Vanessa", "construtora": "STEIN", "imovel": "BOSSA apto 901 A", "vgv": 2760000, "comissao": 133000, "recebido": 133000, "areceber": 0}, {"id": "r18", "ano": "2025", "mes": "Abril", "cliente": "Marlon Pedri", "construtora": "LBJ Construtora - Jaime", "imovel": "Lanzarote - apto 702", "vgv": 0, "comissao": 34342.04, "recebido": 34342.04, "areceber": 0}, {"id": "r19", "ano": "2025", "mes": "Junho", "cliente": "Saul Delagnelo Junior", "construtora": "VETTER", "imovel": "DOLPHIN BAY - apto 1104", "vgv": 1104367.78, "comissao": 27609.19, "recebido": 13804.5, "areceber": 0}, {"id": "r20", "ano": "2025", "mes": "Janeiro", "cliente": "Rui e Vera", "construtora": "STEIN", "imovel": "MARÉ - apto 1803", "vgv": 1269000, "comissao": 63450, "recebido": 31275, "areceber": 0}, {"id": "r21", "ano": "2025", "mes": "Setembro", "cliente": "Carlinhos Celeski", "construtora": "Nilson e Jean", "imovel": "3 salas Penha", "vgv": 2150000, "comissao": 100000, "recebido": 100000, "areceber": 0}, {"id": "r22", "ano": "2025", "mes": "Outubro", "cliente": "Leonardo Anderle", "construtora": "BVF Construtora", "imovel": "Loft 805 Beach Park Studio", "vgv": 440000, "comissao": 22000, "recebido": 0, "areceber": 11000}, {"id": "r23", "ano": "2026", "mes": "Janeiro", "cliente": "Laila Farias", "construtora": "LBJ Construtora - Jaime", "imovel": "Gran Canaria - apto 101", "vgv": 0, "comissao": 0, "recebido": 31464.94, "areceber": 0}, {"id": "r24", "ano": "2026", "mes": "Fevereiro", "cliente": "Natália Fonseca Dias", "construtora": "LBJ Construtora - Jaime", "imovel": "Gran Canaria - apto 1004", "vgv": 0, "comissao": 0, "recebido": 31965.22, "areceber": 0}, {"id": "r25", "ano": "2026", "mes": "Junho", "cliente": "Saul Delagnelo Junior", "construtora": "VETTER", "imovel": "DOLPHIN BAY - apto 1104", "vgv": 0, "comissao": 0, "recebido": 13804.5, "areceber": 0}, {"id": "r26", "ano": "2026", "mes": "Janeiro", "cliente": "Rui e Vera", "construtora": "STEIN", "imovel": "MARÉ - apto 1803", "vgv": 0, "comissao": 0, "recebido": 32175, "areceber": 0}, {"id": "r27", "ano": "2026", "mes": "Janeiro", "cliente": "Leonardo Anderle", "construtora": "BVF Construtora", "imovel": "Loft 805 Beach Park Studio", "vgv": 0, "comissao": 0, "recebido": 0, "areceber": 11000}, {"id": "r28", "ano": "2026", "mes": "Março", "cliente": "Salviano e Ana Laura", "construtora": "RealSec", "imovel": "Celebration - apto 2404", "vgv": 820000, "comissao": 41000, "recebido": 24000, "areceber": 17000}, {"id": "r29", "ano": "2026", "mes": "Abril", "cliente": "Rui e Vera", "construtora": "RealSec", "imovel": "Celebration - apto 2202", "vgv": 1350000, "comissao": 67500, "recebido": 33750, "areceber": 0}, {"id": "r30", "ano": "2026", "mes": "Abril", "cliente": "Gustavo Weber", "construtora": "RealSec", "imovel": "Celebration - apto 1204 - 75m²", "vgv": 814000, "comissao": 40700, "recebido": 20350, "areceber": 20350}];
+var FIN_SEED_DESP=[{"id": "d1", "categoria": "Marketing Digital", "descricao": "Patrocinados Facebook — Cartão de Crédito", "valor": 2000, "obs": "Mensal estimado", "recorrente": true}, {"id": "d2", "categoria": "Marketing Digital", "descricao": "Social Media — Flávia", "valor": 1280, "obs": "Mensal", "recorrente": true}, {"id": "d3", "categoria": "Marketing Digital", "descricao": "Intensiva Tráfego Pago", "valor": 3000, "obs": "Investimento pontual", "recorrente": false}, {"id": "d4", "categoria": "Tecnologia", "descricao": "ChatGPT", "valor": 99, "obs": "Mensal", "recorrente": true}, {"id": "d5", "categoria": "Tecnologia", "descricao": "Claude (Anthropic)", "valor": 250, "obs": "12x", "recorrente": false}, {"id": "d6", "categoria": "Estrutura / Sede", "descricao": "Aluguel", "valor": 6000, "obs": "Estimado", "recorrente": true}, {"id": "d7", "categoria": "Estrutura / Sede", "descricao": "Água", "valor": 0, "obs": "", "recorrente": false}, {"id": "d8", "categoria": "Estrutura / Sede", "descricao": "Internet", "valor": 0, "obs": "", "recorrente": false}, {"id": "d9", "categoria": "Capacitação", "descricao": "Mentoria I.A — Galdino", "valor": 7000, "obs": "12x (6k cartão + 1k pix)", "recorrente": false}, {"id": "d10", "categoria": "Administrativo", "descricao": "Mensalidade Contador", "valor": 290, "obs": "Mensal", "recorrente": true}, {"id": "d11", "categoria": "Energia Elétrica", "descricao": "CELESC — Nov/2025", "valor": 92.76, "obs": "Pago em 04/05", "recorrente": false}, {"id": "d12", "categoria": "Energia Elétrica", "descricao": "CELESC — Dez/2025", "valor": 92.71, "obs": "Pago em 04/05", "recorrente": false}, {"id": "d13", "categoria": "Energia Elétrica", "descricao": "CELESC — Jan/2026", "valor": 88.22, "obs": "Pago em 04/05", "recorrente": false}, {"id": "d14", "categoria": "Energia Elétrica", "descricao": "CELESC — Fev/2026", "valor": 84.57, "obs": "Pago em 04/05", "recorrente": false}, {"id": "d15", "categoria": "Energia Elétrica", "descricao": "CELESC — Mar/2026", "valor": 98.99, "obs": "Pago em 04/05", "recorrente": false}, {"id": "d16", "categoria": "Energia Elétrica", "descricao": "CELESC — Abr/2026", "valor": 139.55, "obs": "Pago em 04/05", "recorrente": false}, {"id": "d17", "categoria": "Mobiliário / Ativo", "descricao": "Bender Móveis", "valor": 48000, "obs": "18x cartão", "recorrente": false}];
+var finRec=null, finDesp=null, finReady=false, finInitStarted=false, finSource='', finCompLast='';
+function fmtMi(n){n=Number(n||0);var a=Math.abs(n);if(a>=1e6)return 'R$ '+(n/1e6).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mi';if(a>=1e3)return 'R$ '+(n/1e3).toLocaleString('pt-BR',{maximumFractionDigits:0})+' mil';return 'R$ '+n.toLocaleString('pt-BR',{maximumFractionDigits:0});}
+function fmtBRL(n){return 'R$ '+Number(n||0).toLocaleString('pt-BR',{maximumFractionDigits:0});}
+var FINPAL=['#8a6b44','#c69646','#ddb061','#5d4a30','#b89466','#a07a4e','#e0c88a','#6d5436','#cbb083','#7c6038'];
+function finGenId(p){return p+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36);}
+function finSaveLocal(){try{localStorage.setItem('lat25_fin_rec',JSON.stringify(finRec));localStorage.setItem('lat25_fin_desp',JSON.stringify(finDesp));}catch(e){}}
+function finLoadLocal(){try{var a=JSON.parse(localStorage.getItem('lat25_fin_rec')||'null');var b=JSON.parse(localStorage.getItem('lat25_fin_desp')||'null');if(Array.isArray(a))finRec=a;if(Array.isArray(b))finDesp=b;}catch(e){}}
+async function finLoadCloud(){if(!SB)return 'nocloud';try{var r=await SB.from('fin_receitas').select('*');var d=await SB.from('fin_despesas').select('*');if(r.error||d.error)return 'err';if((r.data&&r.data.length)||(d.data&&d.data.length)){finRec=r.data.map(function(x){return {id:x.id,ano:x.ano||'',mes:x.mes||'',cliente:x.cliente||'',construtora:x.construtora||'',imovel:x.imovel||'',vgv:+x.vgv||0,comissao:+x.comissao||0,recebido:+x.recebido||0,areceber:+x.areceber||0};});finDesp=d.data.map(function(x){return {id:x.id,categoria:x.categoria||'',descricao:x.descricao||'',valor:+x.valor||0,obs:x.obs||'',recorrente:!!x.recorrente};});return 'cloud';}return 'empty';}catch(e){return 'err';}}
+async function finCloudUpsertRec(e){if(SB)try{await SB.from('fin_receitas').upsert(e);}catch(x){}}
+async function finCloudUpsertDesp(e){if(SB)try{await SB.from('fin_despesas').upsert(e);}catch(x){}}
+async function finCloudDel(tbl,id){if(SB)try{await SB.from(tbl).delete().eq('id',id);}catch(x){}}
+async function finCloudReplaceAll(){if(!SB)return;try{await SB.from('fin_receitas').delete().neq('id','');await SB.from('fin_despesas').delete().neq('id','');if(finRec.length)await SB.from('fin_receitas').upsert(finRec);if(finDesp.length)await SB.from('fin_despesas').upsert(finDesp);}catch(x){}}
+async function initFin(){
+  if(finInitStarted)return; finInitStarted=true;
+  finLoadLocal();
+  var res=await finLoadCloud();
+  if(res==='cloud'){finSource='nuvem';finSaveLocal();}
+  else if(res==='empty'){ if(!finRec)finRec=FIN_SEED_REC.map(function(o){return Object.assign({},o);}); if(!finDesp)finDesp=FIN_SEED_DESP.map(function(o){return Object.assign({},o);}); finSource='nuvem (semeado da planilha)'; await finCloudReplaceAll(); finSaveLocal(); }
+  else { if(!finRec)finRec=FIN_SEED_REC.map(function(o){return Object.assign({},o);}); if(!finDesp)finDesp=FIN_SEED_DESP.map(function(o){return Object.assign({},o);}); finSource=(res==='nocloud')?'local':'local (nuvem indisponível)'; finSaveLocal(); }
+  finReady=true; renderFin();
+}
+function finCompute(){
+  var vgv=0,cg=0,cr=0,ar=0,byAno={},byCon={};
+  (finRec||[]).forEach(function(e){var v=+e.vgv||0,c=+e.comissao||0,rc=+e.recebido||0,a=+e.areceber||0;vgv+=v;cg+=c;cr+=rc;ar+=a;var y=e.ano||'—';byAno[y]=byAno[y]||{vgv:0,cg:0,cr:0};byAno[y].vgv+=v;byAno[y].cg+=c;byAno[y].cr+=rc;if(v>0){var k=(e.construtora||'—').trim().toLowerCase();if(!byCon[k])byCon[k]={nome:(e.construtora||'—').trim(),v:0};byCon[k].v+=v;}});
+  var desp=0,byCat={};(finDesp||[]).forEach(function(e){var v=+e.valor||0;desp+=v;var c=e.categoria||'Outros';byCat[c]=(byCat[c]||0)+v;});
+  var anos=Object.keys(byAno).sort();
+  var cons=Object.keys(byCon).map(function(k){return byCon[k];}).sort(function(a,b){return b.v-a.v;}).slice(0,10);
+  var cats=Object.keys(byCat).map(function(k){return [k,byCat[k]];}).sort(function(a,b){return b[1]-a[1];});
+  return {vgv:vgv,cg:cg,cr:cr,ar:ar,desp:desp,anos:anos,byAno:byAno,cons:cons,cats:cats};
+}
+function renderFin(){
+  if(!finReady){initFin();return;}
+  var C=finCompute(); var taxa=C.cg?Math.round(C.cr/C.cg*100):0;
+  var fo=document.getElementById('fin-fonte'); if(fo)fo.textContent='Fonte: '+finSource+' · '+(finRec?finRec.length:0)+' vendas · '+(finDesp?finDesp.length:0)+' despesas · tudo calculado dos lançamentos · clique num KPI p/ ver a composição';
+  var k=document.getElementById('fin-kpis');
+  if(k)k.innerHTML=
+   '<div class="kpi" onclick="finComp(\'vgv\')"><div class="ic"></div><div class="v">'+fmtMi(C.vgv)+'</div><div class="l">VGV negociado ▸</div></div>'+
+   '<div class="kpi gold" onclick="finComp(\'cg\')"><div class="ic"></div><div class="v">'+fmtMi(C.cg)+'</div><div class="l">Comissões geradas ▸</div></div>'+
+   '<div class="kpi ok" onclick="finComp(\'cr\')"><div class="ic"></div><div class="v">'+fmtMi(C.cr)+'</div><div class="l">Comissões recebidas ▸</div></div>'+
+   '<div class="kpi blue" onclick="finComp(\'taxa\')"><div class="ic"></div><div class="v">'+taxa+'%</div><div class="l">Taxa de recebimento ▸</div></div>'+
+   '<div class="kpi warn" onclick="finComp(\'ar\')"><div class="ic"></div><div class="v">'+fmtMi(C.ar)+'</div><div class="l">A receber ▸</div></div>'+
+   '<div class="kpi red" onclick="finComp(\'desp\')"><div class="ic"></div><div class="v">'+fmtMi(C.desp)+'</div><div class="l">Despesas ▸</div></div>';
+  mkChart('fch-vgv','bar',{labels:C.anos,datasets:[{label:'VGV',data:C.anos.map(function(y){return C.byAno[y].vgv;}),backgroundColor:'#8a6b44',borderRadius:6}]},{plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return 'R$ '+(v/1e6)+'mi';}}}}});
+  mkChart('fch-com','bar',{labels:C.anos,datasets:[{label:'Geradas',data:C.anos.map(function(y){return C.byAno[y].cg;}),backgroundColor:'#c69646',borderRadius:5},{label:'Recebidas',data:C.anos.map(function(y){return C.byAno[y].cr;}),backgroundColor:'#5d4a30',borderRadius:5}]},{scales:{y:{ticks:{callback:function(v){return 'R$ '+(v/1e3)+'k';}}}}});
+  mkChart('fch-constr','bar',{labels:C.cons.map(function(x){return x.nome;}),datasets:[{label:'VGV',data:C.cons.map(function(x){return x.v;}),backgroundColor:'#a07a4e',borderRadius:5}]},{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:function(v){return 'R$ '+(v/1e6)+'mi';}}}}});
+  mkChart('fch-desp','doughnut',{labels:C.cats.map(function(x){return x[0];}),datasets:[{data:C.cats.map(function(x){return x[1];}),backgroundColor:FINPAL}]},{plugins:{legend:{position:'right',labels:{boxWidth:12,font:{size:11}}}}});
+  var rt=document.getElementById('fin-rec-tab');
+  if(rt)rt.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:.82rem"><tr style="text-align:left;color:#8a6b44"><th style="padding:5px 4px">Cliente</th><th>Constr.</th><th style="text-align:right">VGV</th><th style="text-align:right">Comissão</th><th></th></tr>'+(finRec||[]).map(function(e){return '<tr style="border-top:1px solid #eee"><td style="padding:6px 4px">'+esc(e.cliente||'—')+'<div style="color:#999;font-size:.72rem">'+esc(e.mes||'')+' '+esc(e.ano||'')+'</div></td><td>'+esc(e.construtora||'')+'</td><td style="text-align:right">'+fmtBRL(e.vgv)+'</td><td style="text-align:right">'+fmtBRL(e.comissao)+'</td><td style="text-align:right"><button class="mini" onclick="finOpenRec(\''+e.id+'\')">Editar</button></td></tr>';}).join('')+'</table>';
+  var rc=document.getElementById('fin-rec-count'); if(rc)rc.textContent='('+(finRec?finRec.length:0)+')';
+  var dt=document.getElementById('fin-desp-tab');
+  if(dt)dt.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:.82rem"><tr style="text-align:left;color:#8a6b44"><th style="padding:5px 4px">Categoria</th><th>Descrição</th><th style="text-align:right">Valor</th><th></th></tr>'+(finDesp||[]).map(function(e){return '<tr style="border-top:1px solid #eee"><td style="padding:6px 4px">'+esc(e.categoria||'')+'</td><td>'+esc(e.descricao||'')+'</td><td style="text-align:right">'+fmtBRL(e.valor)+'</td><td style="text-align:right"><button class="mini" onclick="finOpenDesp(\''+e.id+'\')">Editar</button></td></tr>';}).join('')+'</table>';
+  var o=document.getElementById('fin-obs');
+  if(o)o.innerHTML='<ul style="margin:0;padding-left:18px">'+
+   '<li>Tudo é <b>calculado dos lançamentos</b> — sem total fixo, então não repete o erro de "dobro" da planilha (que marcava 48,7 mi de VGV; o correto é '+fmtMi(C.vgv)+').</li>'+
+   '<li><b>Recebimento: '+taxa+'%</b> ('+fmtMi(C.cr)+' de '+fmtMi(C.cg)+'). A receber: '+fmtBRL(C.ar)+'.</li>'+
+   '<li><b>Despesas ('+fmtBRL(C.desp)+')</b> misturam recorrente mensal e parcelado/pontual — use "recorrente" ao lançar pra separar.</li>'+
+   '<li>Lançamentos salvos na <b>nuvem</b> (Supabase) + backup local. Clique num KPI pra ver e editar a composição.</li></ul>';
+  if(document.getElementById('m-fincomp')&&document.getElementById('m-fincomp').classList.contains('open')&&finCompLast)finComp(finCompLast);
+}
+function finComp(kind){
+  finCompLast=kind; var C=finCompute(); var title='',formula='',parts=[],tipo='rec',total=0,addable=true;
+  if(kind==='vgv'){title='VGV negociado';formula='Soma do VGV de cada venda';parts=(finRec||[]).filter(function(e){return +e.vgv;}).map(function(e){return {label:(e.cliente||e.imovel||'—')+' · '+(e.construtora||''),value:+e.vgv,id:e.id};});total=C.vgv;}
+  else if(kind==='cg'){title='Comissões geradas';formula='Soma da comissão de cada venda';parts=(finRec||[]).filter(function(e){return +e.comissao;}).map(function(e){return {label:(e.cliente||e.imovel||'—'),value:+e.comissao,id:e.id};});total=C.cg;}
+  else if(kind==='cr'){title='Comissões recebidas';formula='Soma dos valores já recebidos';parts=(finRec||[]).filter(function(e){return +e.recebido;}).map(function(e){return {label:(e.cliente||e.imovel||'—'),value:+e.recebido,id:e.id};});total=C.cr;}
+  else if(kind==='ar'){title='A receber';formula='Soma dos saldos a receber';parts=(finRec||[]).filter(function(e){return +e.areceber;}).map(function(e){return {label:(e.cliente||e.imovel||'—'),value:+e.areceber,id:e.id};});total=C.ar;}
+  else if(kind==='desp'){tipo='desp';title='Despesas';formula='Soma de todas as despesas lançadas';parts=(finDesp||[]).map(function(e){return {label:e.categoria+(e.descricao?(' · '+e.descricao):''),value:+e.valor,id:e.id};});total=C.desp;}
+  else if(kind==='taxa'){tipo='info';addable=false;title='Taxa de recebimento';formula='Recebido ÷ Gerado';parts=[{label:'Comissões recebidas',value:C.cr},{label:'Comissões geradas',value:C.cg}];total=(C.cg?Math.round(C.cr/C.cg*100):0);}
+  document.getElementById('fc-title').textContent=title+(tipo==='info'?(' — '+total+'%'):(' — '+fmtBRL(total)));
+  document.getElementById('fc-formula').textContent=formula+' · '+parts.length+(tipo==='info'?' componentes':' lançamentos');
+  var host=document.getElementById('fc-parts');
+  host.innerHTML=parts.length?parts.map(function(p){return '<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:7px 2px;border-bottom:1px solid #eee;font-size:.86rem"><span>'+esc(p.label)+'</span><span style="white-space:nowrap"><b>'+fmtBRL(p.value)+'</b>'+(p.id?(' <button class="mini" onclick="'+(tipo==='desp'?'finOpenDesp':'finOpenRec')+'(\''+p.id+'\')">Editar</button>'):'')+'</span></div>';}).join(''):'<div class="empty" style="padding:16px;color:#999">Sem lançamentos.</div>';
+  var add=document.getElementById('fc-add'); if(add){add.style.display=addable?'inline-block':'none';add.setAttribute('data-tipo',tipo);}
+  document.getElementById('m-fincomp').classList.add('open');
+}
+function finCompAdd(){var tipo=document.getElementById('fc-add').getAttribute('data-tipo');if(tipo==='desp')finOpenDesp();else finOpenRec();}
+function finOpenRec(id){var e=id?(finRec||[]).find(function(x){return x.id===id;}):null;document.getElementById('finrec-title').textContent=e?'Editar venda':'Lançar venda';document.getElementById('fr-id').value=e?e.id:'';['ano','mes','cliente','construtora','imovel','vgv','comissao','recebido','areceber'].forEach(function(f){document.getElementById('fr-'+f).value=e?(e[f]!=null?e[f]:''):'';});document.getElementById('fr-del').style.display=e?'inline-block':'none';document.getElementById('m-finrec').classList.add('open');}
+async function finSaveRec(){var id=document.getElementById('fr-id').value;var e={id:id||finGenId('r'),ano:document.getElementById('fr-ano').value.trim(),mes:document.getElementById('fr-mes').value.trim(),cliente:document.getElementById('fr-cliente').value.trim(),construtora:document.getElementById('fr-construtora').value.trim(),imovel:document.getElementById('fr-imovel').value.trim(),vgv:+document.getElementById('fr-vgv').value||0,comissao:+document.getElementById('fr-comissao').value||0,recebido:+document.getElementById('fr-recebido').value||0,areceber:+document.getElementById('fr-areceber').value||0};if(!e.cliente&&!e.imovel){alert('Informe ao menos cliente ou imóvel.');return;}var i=(finRec||[]).findIndex(function(x){return x.id===e.id;});if(i>=0)finRec[i]=e;else finRec.unshift(e);finSaveLocal();finCloudUpsertRec(e);closeM('m-finrec');renderFin();toast('Venda salva');}
+async function finDelRec(){var id=document.getElementById('fr-id').value;if(!id)return;if(!confirm('Excluir esta venda?'))return;finRec=(finRec||[]).filter(function(x){return x.id!==id;});finSaveLocal();finCloudDel('fin_receitas',id);closeM('m-finrec');renderFin();toast('Venda excluída');}
+function finOpenDesp(id){var e=id?(finDesp||[]).find(function(x){return x.id===id;}):null;document.getElementById('findesp-title').textContent=e?'Editar despesa':'Lançar despesa';document.getElementById('fd-id').value=e?e.id:'';document.getElementById('fd-categoria').value=e?e.categoria:'';document.getElementById('fd-descricao').value=e?e.descricao:'';document.getElementById('fd-valor').value=e?e.valor:'';document.getElementById('fd-obs').value=e?e.obs:'';document.getElementById('fd-recorrente').value=e&&e.recorrente?'1':'';document.getElementById('fd-del').style.display=e?'inline-block':'none';document.getElementById('m-findesp').classList.add('open');}
+async function finSaveDesp(){var id=document.getElementById('fd-id').value;var e={id:id||finGenId('d'),categoria:document.getElementById('fd-categoria').value.trim(),descricao:document.getElementById('fd-descricao').value.trim(),valor:+document.getElementById('fd-valor').value||0,obs:document.getElementById('fd-obs').value.trim(),recorrente:document.getElementById('fd-recorrente').value==='1'};if(!e.categoria){alert('Informe a categoria.');return;}var i=(finDesp||[]).findIndex(function(x){return x.id===e.id;});if(i>=0)finDesp[i]=e;else finDesp.unshift(e);finSaveLocal();finCloudUpsertDesp(e);closeM('m-findesp');renderFin();toast('Despesa salva');}
+async function finDelDesp(){var id=document.getElementById('fd-id').value;if(!id)return;if(!confirm('Excluir esta despesa?'))return;finDesp=(finDesp||[]).filter(function(x){return x.id!==id;});finSaveLocal();finCloudDel('fin_despesas',id);closeM('m-findesp');renderFin();toast('Despesa excluída');}
+function finUpload(ev){var f=ev.target.files[0];if(!f)return;if(!confirm('Importar a planilha vai SUBSTITUIR os lançamentos atuais. Continuar?')){ev.target.value='';return;}var r=new FileReader();r.onload=function(e){try{var wb=XLSX.read(e.target.result,{type:'array'});var pr=finParseWorkbook(wb);if(!pr.rec.length&&!pr.desp.length){alert('Não encontrei abas de Receitas/Despesas reconhecíveis.');return;}finRec=pr.rec;finDesp=pr.desp;finSaveLocal();finCloudReplaceAll();renderFin();toast('Planilha importada: '+pr.rec.length+' vendas, '+pr.desp.length+' despesas');}catch(x){alert('Erro ao ler a planilha: '+x.message);}};r.readAsArrayBuffer(f);ev.target.value='';}
+function finParseWorkbook(wb){
+  var rec=[],desp=[];
+  wb.SheetNames.forEach(function(sn){
+    var rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:''});
+    var hi=-1,H=[];
+    for(var i=0;i<rows.length;i++){var line=rows[i].map(function(c){return String(c).toUpperCase();});if(line.some(function(c){return c.indexOf('VGV')>=0;})&&line.some(function(c){return c.indexOf('COMISS')>=0;})){hi=i;H=line;break;}if(line.some(function(c){return c.indexOf('CATEGORIA')>=0;})&&line.some(function(c){return c.indexOf('VALOR')>=0;})){hi=i;H=line;break;}}
+    if(hi<0)return;
+    function col(names){for(var n=0;n<names.length;n++){for(var c=0;c<H.length;c++){if(H[c].indexOf(names[n])>=0)return c;}}return -1;}
+    var isRec=H.some(function(c){return c.indexOf('VGV')>=0;});
+    if(isRec){
+      var cM=col(['MÊS','MES']),cC=col(['CLIENTE']),cCo=col(['CONSTRUTORA']),cI=col(['IMÓVEL','IMOVEL']),cV=col(['VGV']),cCom=col(['COMISS']),cR=col(['RECEBIDO']),cA=col(['A RECEBER']);
+      var ano='';
+      for(var i=hi+1;i<rows.length;i++){var row=rows[i];var first=String(row[1]||row[0]||'').toUpperCase();var m=first.match(/ANO\s*(\d{4})/);if(m){ano=m[1];continue;}if(first.indexOf('TOTAL')>=0)continue;
+        var cli=cC>=0?String(row[cC]||'').trim():'';var imo=cI>=0?String(row[cI]||'').trim():'';var vgv=cV>=0?parseFloat(row[cV])||0:0;var com=cCom>=0?parseFloat(row[cCom])||0:0;var reb=cR>=0?parseFloat(row[cR])||0:0;var ar=cA>=0?parseFloat(row[cA])||0:0;
+        if(!cli&&!imo&&!vgv&&!com&&!reb)continue;
+        rec.push({id:finGenId('r'),ano:ano,mes:cM>=0?String(row[cM]||'').trim():'',cliente:cli,construtora:cCo>=0?String(row[cCo]||'').trim():'',imovel:imo,vgv:vgv,comissao:com,recebido:reb,areceber:ar});}
+    } else {
+      var dCat=col(['CATEGORIA']),dDes=col(['DESCRI']),dVal=col(['VALOR']),dObs=col(['OBSERV']);
+      for(var i=hi+1;i<rows.length;i++){var row=rows[i];var cat=dCat>=0?String(row[dCat]||'').trim():'';var val=dVal>=0?parseFloat(row[dVal]):NaN;if(!cat||cat.toUpperCase().indexOf('TOTAL')>=0||cat.toUpperCase().indexOf('DESPESAS POR')>=0)continue;if(isNaN(val))continue;
+        var obs=dObs>=0?String(row[dObs]||'').trim():'';desp.push({id:finGenId('d'),categoria:cat,descricao:dDes>=0?String(row[dDes]||'').trim():'',valor:val,obs:obs,recorrente:/mensal|estimad/i.test(obs)});}
+    }
+  });
+  return {rec:rec,desp:desp};
+}
 
 function renderStats(){
   const{c,over,tod}=counts();const ativo=leads.length-c.ganho-c.perdido;
