@@ -334,10 +334,10 @@
   <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px;margin-bottom:14px">
     <div><h2 style="margin:0;color:var(--navy);font-size:1.12rem;font-weight:700">Financeiro — Receitas &amp; Comissões</h2>
     <div class="hint" id="fin-fonte" style="margin:2px 0 0">Carregando...</div></div>
-    <div class="hact" style="gap:7px">
-      <button class="hbtn gold" onclick="finOpenRec()">+ Lançar venda</button>
-      <button class="hbtn" onclick="finOpenDesp()">+ Lançar despesa</button>
-      <button class="hbtn" onclick="document.getElementById('fin-file').click()">Importar planilha</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="finOpenRec()" style="background:var(--gold);color:#2a2113;border:none;border-radius:9px;padding:9px 15px;font-weight:700;cursor:pointer;font-size:.86rem">+ Lançar venda</button>
+      <button onclick="finOpenDesp()" style="background:var(--navy);color:#fff;border:none;border-radius:9px;padding:9px 15px;font-weight:600;cursor:pointer;font-size:.86rem">+ Lançar despesa</button>
+      <button onclick="document.getElementById('fin-file').click()" style="background:#fff;color:var(--navy);border:1px solid var(--petrol);border-radius:9px;padding:9px 15px;font-weight:600;cursor:pointer;font-size:.86rem">Importar planilha</button>
       <input type="file" id="fin-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="finUpload(event)">
     </div>
   </div>
@@ -582,6 +582,12 @@ function finCompute(){
   var cats=Object.keys(byCat).map(function(k){return [k,byCat[k]];}).sort(function(a,b){return b[1]-a[1];});
   return {vgv:vgv,cg:cg,cr:cr,ar:ar,desp:desp,anos:anos,byAno:byAno,cons:cons,cats:cats};
 }
+function openList(t,html){var a=document.getElementById('sc-title');var b=document.getElementById('sc-body');if(!a||!b)return;a.textContent=t;b.innerHTML=html||'<div class="empty">Nada aqui.</div>';document.getElementById('m-state').classList.add('open');}
+function finRowsVendas(arr){return arr.length?arr.map(function(e){return '<div class="row"><div class="info"><div class="nm">'+esc(e.cliente||e.imovel||'—')+'</div><div class="sub"><span>'+esc(e.mes||'')+' '+esc(e.ano||'')+'</span><span class="tag src">'+esc(e.construtora||'')+'</span><span>VGV '+fmtBRL(e.vgv)+'</span><span>Com. '+fmtBRL(e.comissao)+'</span><span>Receb. '+fmtBRL(e.recebido)+'</span></div></div><div class="acts"><button class="mini" onclick="finOpenRec(\''+e.id+'\')">Editar</button></div></div>';}).join(''):'<div class="empty">Nada aqui.</div>';}
+function finRowsDespesas(arr){return arr.length?arr.map(function(e){return '<div class="row"><div class="info"><div class="nm">'+esc(e.categoria||'')+'</div><div class="sub"><span>'+esc(e.descricao||'')+'</span><span>'+(e.recorrente?'recorrente':'pontual')+'</span><span>'+fmtBRL(e.valor)+'</span></div></div><div class="acts"><button class="mini" onclick="finOpenDesp(\''+e.id+'\')">Editar</button></div></div>';}).join(''):'<div class="empty">Nada aqui.</div>';}
+function finOpenAno(i){var C=finCompute();var y=C.anos[i];if(y==null)return;openList('Vendas de '+y,finRowsVendas((finRec||[]).filter(function(x){return (x.ano||'—')===y;})));}
+function finOpenConstr(i){var C=finCompute();var c=C.cons[i];if(!c)return;openList('VGV — '+c.nome,finRowsVendas((finRec||[]).filter(function(x){return (x.construtora||'').trim().toLowerCase()===c.nome.trim().toLowerCase();})));}
+function finOpenCat(i){var C=finCompute();var cat=C.cats[i];if(!cat)return;openList('Despesas — '+cat[0],finRowsDespesas((finDesp||[]).filter(function(x){return (x.categoria||'')===cat[0];})));}
 function renderFin(){
   if(!finReady){initFin();return;}
   var C=finCompute(); var taxa=C.cg?Math.round(C.cr/C.cg*100):0;
@@ -594,10 +600,10 @@ function renderFin(){
    '<div class="kpi blue" onclick="finComp(\'taxa\')"><div class="ic"></div><div class="v">'+taxa+'%</div><div class="l">Taxa de recebimento ▸</div></div>'+
    '<div class="kpi warn" onclick="finComp(\'ar\')"><div class="ic"></div><div class="v">'+fmtMi(C.ar)+'</div><div class="l">A receber ▸</div></div>'+
    '<div class="kpi red" onclick="finComp(\'desp\')"><div class="ic"></div><div class="v">'+fmtMi(C.desp)+'</div><div class="l">Despesas ▸</div></div>';
-  mkChart('fch-vgv','bar',{labels:C.anos,datasets:[{label:'VGV',data:C.anos.map(function(y){return C.byAno[y].vgv;}),backgroundColor:'#8a6b44',borderRadius:6}]},{plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return 'R$ '+(v/1e6)+'mi';}}}}});
-  mkChart('fch-com','bar',{labels:C.anos,datasets:[{label:'Geradas',data:C.anos.map(function(y){return C.byAno[y].cg;}),backgroundColor:'#c69646',borderRadius:5},{label:'Recebidas',data:C.anos.map(function(y){return C.byAno[y].cr;}),backgroundColor:'#5d4a30',borderRadius:5}]},{scales:{y:{ticks:{callback:function(v){return 'R$ '+(v/1e3)+'k';}}}}});
-  mkChart('fch-constr','bar',{labels:C.cons.map(function(x){return x.nome;}),datasets:[{label:'VGV',data:C.cons.map(function(x){return x.v;}),backgroundColor:'#a07a4e',borderRadius:5}]},{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:function(v){return 'R$ '+(v/1e6)+'mi';}}}}});
-  mkChart('fch-desp','doughnut',{labels:C.cats.map(function(x){return x[0];}),datasets:[{data:C.cats.map(function(x){return x[1];}),backgroundColor:FINPAL}]},{plugins:{legend:{position:'right',labels:{boxWidth:12,font:{size:11}}}}});
+  mkChart('fch-vgv','bar',{labels:C.anos,datasets:[{label:'VGV',data:C.anos.map(function(y){return C.byAno[y].vgv;}),backgroundColor:'#8a6b44',borderRadius:6}]},{onClick:function(e,el){if(el.length)finOpenAno(el[0].index);},plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return 'R$ '+(v/1e6)+'mi';}}}}});
+  mkChart('fch-com','bar',{labels:C.anos,datasets:[{label:'Geradas',data:C.anos.map(function(y){return C.byAno[y].cg;}),backgroundColor:'#c69646',borderRadius:5},{label:'Recebidas',data:C.anos.map(function(y){return C.byAno[y].cr;}),backgroundColor:'#5d4a30',borderRadius:5}]},{onClick:function(e,el){if(el.length)finOpenAno(el[0].index);},scales:{y:{ticks:{callback:function(v){return 'R$ '+(v/1e3)+'k';}}}}});
+  mkChart('fch-constr','bar',{labels:C.cons.map(function(x){return x.nome;}),datasets:[{label:'VGV',data:C.cons.map(function(x){return x.v;}),backgroundColor:'#a07a4e',borderRadius:5}]},{onClick:function(e,el){if(el.length)finOpenConstr(el[0].index);},indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:function(v){return 'R$ '+(v/1e6)+'mi';}}}}});
+  mkChart('fch-desp','doughnut',{labels:C.cats.map(function(x){return x[0];}),datasets:[{data:C.cats.map(function(x){return x[1];}),backgroundColor:FINPAL}]},{onClick:function(e,el){if(el.length)finOpenCat(el[0].index);},plugins:{legend:{position:'right',labels:{boxWidth:12,font:{size:11}}}}});
   var rt=document.getElementById('fin-rec-tab');
   if(rt)rt.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:.82rem"><tr style="text-align:left;color:#8a6b44"><th style="padding:5px 4px">Cliente</th><th>Constr.</th><th style="text-align:right">VGV</th><th style="text-align:right">Comissão</th><th></th></tr>'+(finRec||[]).map(function(e){return '<tr style="border-top:1px solid #eee"><td style="padding:6px 4px">'+esc(e.cliente||'—')+'<div style="color:#999;font-size:.72rem">'+esc(e.mes||'')+' '+esc(e.ano||'')+'</div></td><td>'+esc(e.construtora||'')+'</td><td style="text-align:right">'+fmtBRL(e.vgv)+'</td><td style="text-align:right">'+fmtBRL(e.comissao)+'</td><td style="text-align:right"><button class="mini" onclick="finOpenRec(\''+e.id+'\')">Editar</button></td></tr>';}).join('')+'</table>';
   var rc=document.getElementById('fin-rec-count'); if(rc)rc.textContent='('+(finRec?finRec.length:0)+')';
@@ -678,9 +684,9 @@ function renderStats(){
 function ufCounts(){const u={};leads.forEach(l=>{const uf=leadUF(l);if(uf)u[uf]=(u[uf]||0)+1});return u}
 function renderDash(){
   const{c}=counts();
-  mkChart('ch-funnel','bar',{labels:SK.map(s=>STAGES[s].label),datasets:[{data:SK.map(s=>c[s]),backgroundColor:SK.map(s=>STAGES[s].color),borderRadius:6}]},{indexAxis:'y',plugins:{legend:{display:false}},onClick:()=>setView('funil')});
-  const src={};leads.forEach(l=>{const o=l.origem||'Outro';src[o]=(src[o]||0)+1});
-  mkChart('ch-source','doughnut',{labels:Object.keys(src),datasets:[{data:Object.values(src),backgroundColor:['#90704f','#c69646','#7a6699','#3f7a99','#1f9d57','#b5403a','#bda07a']}]},{plugins:{legend:{position:'right',labels:{boxWidth:12,font:{size:11}}}}});
+  mkChart('ch-funnel','bar',{labels:SK.map(s=>STAGES[s].label),datasets:[{data:SK.map(s=>c[s]),backgroundColor:SK.map(s=>STAGES[s].color),borderRadius:6}]},{indexAxis:'y',plugins:{legend:{display:false}},onClick:(e,el)=>{if(el.length){var st=SK[el[0].index];var arr=leads.filter(function(l){return l.stage===st;});openList(STAGES[st].label+' — '+arr.length+' cliente(s)',arr.length?arr.map(function(l){return rowHtml(l);}).join(''):'<div class="empty">Nenhum.</div>');}}});
+  const src={};leads.forEach(l=>{const o=l.origem||'Outro';src[o]=(src[o]||0)+1});const srcKeys=Object.keys(src);
+  mkChart('ch-source','doughnut',{labels:Object.keys(src),datasets:[{data:Object.values(src),backgroundColor:['#90704f','#c69646','#7a6699','#3f7a99','#1f9d57','#b5403a','#bda07a']}]},{onClick:(e,el)=>{if(el.length){var o=srcKeys[el[0].index];var arr=leads.filter(function(l){return (l.origem||'Outro')===o;});openList('Origem: '+o+' — '+arr.length,arr.length?arr.map(function(l){return rowHtml(l);}).join(''):'<div class="empty">Nenhum.</div>');}},plugins:{legend:{position:'right',labels:{boxWidth:12,font:{size:11}}}}});
   const u=ufCounts();const top=Object.entries(u).sort((a,b)=>b[1]-a[1]).slice(0,8);
   mkChart('ch-uf','bar',{labels:top.map(x=>x[0]),datasets:[{data:top.map(x=>x[1]),backgroundColor:'#90704f',borderRadius:6}]},{plugins:{legend:{display:false}},onClick:(e,el)=>{if(el.length)openStateClients(top[el[0].index][0])}});
   const ti={};IMOVEIS.forEach(p=>{const t=p.tipo||'Apartamento';ti[t]=(ti[t]||0)+1});
