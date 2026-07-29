@@ -341,11 +341,17 @@
       <input type="file" id="fin-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="finUpload(event)">
     </div>
   </div>
-<div id="fin-filtro" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
-    <span class="hint" style="margin:0;font-weight:600">Período:</span>
-    <select id="fin-fano" onchange="finSetFiltro()" style="padding:7px 10px;border:1px solid #e0d8c8;border-radius:8px;font-family:inherit"></select>
-    <select id="fin-fmes" onchange="finSetFiltro()" style="padding:7px 10px;border:1px solid #e0d8c8;border-radius:8px;font-family:inherit"></select>
-    <button onclick="finLimparFiltro()" style="background:#fff;color:var(--navy);border:1px solid #e0d8c8;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:.84rem">Limpar</button>
+<div id="fin-filtro" style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+    <span class="hint" style="margin:0;font-weight:600">Período — De</span>
+    <input type="month" id="fin-de" onchange="finSetFiltro()" style="padding:6px 9px;border:1px solid #e0d8c8;border-radius:8px;font-family:inherit">
+    <span class="hint" style="margin:0;font-weight:600">Até</span>
+    <input type="month" id="fin-ate" onchange="finSetFiltro()" style="padding:6px 9px;border:1px solid #e0d8c8;border-radius:8px;font-family:inherit">
+    <span class="hint" style="margin:0 0 0 6px">Atalho:</span>
+    <select id="fin-fyear" style="padding:6px 9px;border:1px solid #e0d8c8;border-radius:8px;font-family:inherit"></select>
+    <button onclick="finPreset(1)" style="background:#fff;color:var(--navy);border:1px solid #e0d8c8;border-radius:8px;padding:6px 11px;cursor:pointer;font-size:.82rem">1º semestre</button>
+    <button onclick="finPreset(2)" style="background:#fff;color:var(--navy);border:1px solid #e0d8c8;border-radius:8px;padding:6px 11px;cursor:pointer;font-size:.82rem">2º semestre</button>
+    <button onclick="finPreset(0)" style="background:#fff;color:var(--navy);border:1px solid #e0d8c8;border-radius:8px;padding:6px 11px;cursor:pointer;font-size:.82rem">Ano todo</button>
+    <button onclick="finLimparFiltro()" style="background:#fff;color:var(--navy);border:1px solid #e0d8c8;border-radius:8px;padding:6px 11px;cursor:pointer;font-size:.82rem">Limpar</button>
     <span class="hint" id="fin-filtro-info" style="margin:0;color:var(--petrol);font-weight:600"></span>
   </div>
   <div class="kpis" id="fin-kpis"></div>
@@ -581,13 +587,17 @@ async function initFin(){
   else { if(!finRec)finRec=FIN_SEED_REC.map(function(o){return Object.assign({},o);}); if(!finDesp)finDesp=FIN_SEED_DESP.map(function(o){return Object.assign({},o);}); finSource=(res==='nocloud')?'local':'local (nuvem indisponível)'; finSaveLocal(); }
   finReady=true; renderFin();
 }
-var finFiltro={ano:'',mes:''};
+var finFiltro={de:'',ate:''};
 var FIN_MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-function finRecMatch(e){return (!finFiltro.ano||(e.ano||'')===finFiltro.ano)&&(!finFiltro.mes||(e.mes||'').toLowerCase()===finFiltro.mes.toLowerCase());}
-function finDespMatch(e){if(e.recorrente)return true;return (!finFiltro.ano||(e.ano||'')===finFiltro.ano)&&(!finFiltro.mes||(e.mes||'').toLowerCase()===finFiltro.mes.toLowerCase());}
-function finSetFiltro(){var a=document.getElementById('fin-fano'),m=document.getElementById('fin-fmes');finFiltro.ano=a?a.value:'';finFiltro.mes=m?m.value:'';renderFin();}
-function finLimparFiltro(){finFiltro={ano:'',mes:''};renderFin();}
-function finFillSelects(){var anos={};(finRec||[]).forEach(function(e){if(e.ano)anos[e.ano]=1;});(finDesp||[]).forEach(function(e){if(e.ano)anos[e.ano]=1;});var al=Object.keys(anos).sort();var sa=document.getElementById('fin-fano');if(sa)sa.innerHTML='<option value="">Todos os anos</option>'+al.map(function(a){return '<option value="'+a+'"'+(finFiltro.ano===a?' selected':'')+'>'+a+'</option>';}).join('');var sm=document.getElementById('fin-fmes');if(sm)sm.innerHTML='<option value="">Todos os meses</option>'+FIN_MESES.map(function(mm){return '<option value="'+mm+'"'+(finFiltro.mes===mm?' selected':'')+'>'+mm+'</option>';}).join('');var info=document.getElementById('fin-filtro-info');if(info)info.textContent=(finFiltro.ano||finFiltro.mes)?('Filtrando: '+(finFiltro.mes?finFiltro.mes+' ':'')+(finFiltro.ano||'')).trim():'';}
+function finMonthNum(mes){for(var i=0;i<FIN_MESES.length;i++){if(FIN_MESES[i].toLowerCase()===(mes||'').toLowerCase())return i+1;}return 0;}
+function finBounds(){var lo=null,hi=null;if(finFiltro.de){var p=finFiltro.de.split('-');lo=(+p[0])*100+(+p[1]);}if(finFiltro.ate){var q=finFiltro.ate.split('-');hi=(+q[0])*100+(+q[1]);}return {lo:lo,hi:hi};}
+function finInRange(ano,mes){var b=finBounds();if(b.lo==null&&b.hi==null)return true;if(!ano)return false;var y=+ano;var m=finMonthNum(mes);if(m===0){var yLo=b.lo!=null?Math.floor(b.lo/100):-99999,yHi=b.hi!=null?Math.floor(b.hi/100):99999;return y>=yLo&&y<=yHi;}var ym=y*100+m;if(b.lo!=null&&ym<b.lo)return false;if(b.hi!=null&&ym>b.hi)return false;return true;}
+function finRecMatch(e){return finInRange(e.ano,e.mes);}
+function finDespMatch(e){if(e.recorrente)return true;return finInRange(e.ano,e.mes);}
+function finSetFiltro(){var d=document.getElementById('fin-de'),a=document.getElementById('fin-ate');finFiltro.de=d?d.value:'';finFiltro.ate=a?a.value:'';renderFin();}
+function finLimparFiltro(){finFiltro={de:'',ate:''};var d=document.getElementById('fin-de'),a=document.getElementById('fin-ate');if(d)d.value='';if(a)a.value='';renderFin();}
+function finPreset(sem){var ys=document.getElementById('fin-fyear');var y=ys&&ys.value?ys.value:String(new Date().getFullYear());var de,ate;if(sem===1){de=y+'-01';ate=y+'-06';}else if(sem===2){de=y+'-07';ate=y+'-12';}else{de=y+'-01';ate=y+'-12';}finFiltro.de=de;finFiltro.ate=ate;var d=document.getElementById('fin-de'),a=document.getElementById('fin-ate');if(d)d.value=de;if(a)a.value=ate;renderFin();}
+function finFillSelects(){var anos={};(finRec||[]).forEach(function(e){if(e.ano)anos[e.ano]=1;});(finDesp||[]).forEach(function(e){if(e.ano)anos[e.ano]=1;});var al=Object.keys(anos).sort();var ys=document.getElementById('fin-fyear');if(ys&&!ys.__done){ys.innerHTML=al.map(function(a){return '<option value="'+a+'">'+a+'</option>';}).join('');ys.value=al[al.length-1]||'';ys.__done=1;}var d=document.getElementById('fin-de'),a=document.getElementById('fin-ate');if(d&&d.value!==(finFiltro.de||''))d.value=finFiltro.de||'';if(a&&a.value!==(finFiltro.ate||''))a.value=finFiltro.ate||'';var info=document.getElementById('fin-filtro-info');if(info){var b=finBounds();info.textContent=(b.lo!=null||b.hi!=null)?('Período: '+(finFiltro.de||'início')+' → '+(finFiltro.ate||'fim')):'';}}
 function finCompute(){
   var vgv=0,cg=0,cr=0,ar=0,byAno={},byCon={};
   var _RR=(finRec||[]).filter(finRecMatch),_DD=(finDesp||[]).filter(finDespMatch);
